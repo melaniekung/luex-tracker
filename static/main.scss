@@ -1,0 +1,54 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 40px;
+}
+
+form {
+    margin: 20px;
+}
+
+input, button {
+    padding: 8px;
+    margin: 5px;
+}
+
+table {
+    width: 100%;
+    margin: auto;
+}
+
+th, td {
+    border: 1px solid #333;
+    padding: 8px;
+}
+
+.purchases a {
+    color: #333;
+    text-decoration: none;
+
+    &:focus {
+        color: darkred;
+    }
+}
+.notes {
+    display: none;
+}
+
+.delete, .update {
+    width: 1rem;
+    padding: 0;
+
+    .delete-btn, .update-btn {
+        border: none;
+        background-color: white;
+    }
+
+    .delete-btn:hover {
+        background-color: darkred;
+    }
+
+    .update-btn:hover {
+        background-color: rgb(157, 255, 162);
+    }
+}

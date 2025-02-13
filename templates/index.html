@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <h1>🐾 Luka's Expenses 💰</h1>
+
+    <form action="/add" method="POST">
+        <input type="date" name="date" placeholder="Date">
+        <input type="text" name="purchase" placeholder="Purchase" required>
+        <input type="number" min="0.00" max="10000.00" step="0.01" name="amount" placeholder="Amount" required>
+        <input type="text" max="500" name="notes" placeholder="Notes">
+        <button type="submit">Add Expense</button>
+    </form>
+
+    <h2>📋 Expense List</h2>
+    <table>
+        <tr><th>Date</th><th>Purchase</th><th>Amount</th></tr>
+        {% for expense in expenses %}
+        <tr id="row-{{ expense.Id }}">
+            <td class="date">{{ expense.Date }}</td>
+            <td class="purchases">
+                <a href="#" onclick="showNotes('{{ expense.Notes|escape}}'); return false;">
+                    {{ expense.Purchase }}
+                </a>
+            </td>
+            <td class="amount">${{ "%.2f"|format(expense.Amount) }}</td>
+            <td class="notes">{{ expense.Notes }}</td>
+            <td class="update">
+                <button class="update-btn" onclick="updateExpense('{{ expense.Id }}', '{{ expense.Date }}', '{{ expense.Purchase }}', '{{ expense.Amount }}', '{{ expense.Notes }}')">✏️</button>
+            </td>
+            <td class="delete">
+                <button class="delete-btn" onclick="deleteExpense('{{ expense.Id }}', '{{ expense.Purchase }}')">❌</button>
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="2"><strong>Total:</strong></td>
+            <td id="total"><strong>${{ "%.2f"|format(total) }}</strong></td>
+        </tr>
+    </table>
+
+
+    <div id="edit-modal" style="display:none;">
+        <h2>Edit Expense</h2>
+        <form id="edit-form">
+            <label for="edit-date">Date</label>
+            <input type="text" id="edit-date" name="Date">
+
+            <label for="edit-purchase">Purchase</label>
+            <input type="text" id="edit-purchase" name="Purchase">
+
+            <label for="edit-amount">Amount</label>
+            <input type="number" id="edit-amount" name="Amount">
+
+            <label for="edit-notes">Notes</label>
+            <input type="text" id="edit-notes" name="Notes">
+
+            <button type="submit">Save Changes</button>
+            <button type="button" onclick="closeEditModal()">Cancel</button>
+        </form>
+    </div>
+
+    <div id="notes-box" style="display: none;">
+        <h3>📝 Notes</h3>
+        <p id="general-notes"></p>
+    </div>
+
+    <script>
+        function showNotes(notes) {
+            if (!notes || notes === "nan") {
+                notes = "No notes available.";
+            }
+            document.getElementById("general-notes").textContent = notes;
+            document.getElementById("notes-box").style.display = 'block';
+        }
+
+        function deleteExpense(rowId, purchase) {
+            if (!confirm(`Are you sure you want to delete "${purchase}" (ID: "${rowId}")?`)) return;
+
+            console.log('confirmed');
+            fetch(`/delete-expense/${rowId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(`row-${rowId}`).remove();
+                    } else {
+                        alert("Error deleting expense.");
+                    }
+                });
+        }
+
+        function updateExpense(id, date, purchase, amount, notes) {
+            // Set the modal fields to current values
+            document.getElementById('edit-date').value = date;
+            document.getElementById('edit-purchase').value = purchase;
+            document.getElementById('edit-amount').value = amount;
+            document.getElementById('edit-notes').value = notes;
+
+            // Show the modal
+            document.getElementById('edit-modal').style.display = 'block';
+
+            // Set the form action to update
+            document.getElementById('edit-form').onsubmit = function(e) {
+                e.preventDefault();
+
+                const updatedData = {
+                    Date: document.getElementById('edit-date').value,
+                    Purchase: document.getElementById('edit-purchase').value,
+                    Amount: parseFloat(document.getElementById('edit-amount').value),
+                    Notes: document.getElementById('edit-notes').value,
+                };
+
+                // Send update request
+                fetch(`/update-expense/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Expense updated successfully!');
+                        location.reload();  // Reload the page to reflect changes
+                    } else {
+                        alert('Error updating expense: ' + data.error);
+                    }
+                });
+
+                closeEditModal();
+            };
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
