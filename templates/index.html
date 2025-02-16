@@ -34,7 +34,7 @@
                 <button class="update-btn" onclick="updateExpense('{{ expense.Id }}', '{{ expense.Date }}', '{{ expense.Purchase }}', '{{ expense.Amount }}', '{{ expense.Notes }}')">✏️</button>
             </td>
             <td class="delete">
-                <button class="delete-btn" onclick="deleteExpense('{{ expense.Id }}', '{{ expense.Purchase }}')">❌</button>
+                <button class="delete-btn" onclick="deleteExpense('{{ expense.Id }}')">❌</button>
             </td>
         </tr>
         {% endfor %}
@@ -55,7 +55,7 @@
             <input type="text" id="edit-purchase" name="Purchase">
 
             <label for="edit-amount">Amount</label>
-            <input type="number" id="edit-amount" name="Amount">
+            <input type="number" id="edit-amount" name="Amount" min="0.00" max="10000.00" step="0.01" >
 
             <label for="edit-notes">Notes</label>
             <input type="text" id="edit-notes" name="Notes">
@@ -133,6 +133,10 @@
 
                 closeEditModal();
             };
+
+            // Scroll to modal
+            var modal = document.getElementById("edit-modal");
+            window.scrollTo(0, modal.offsetTop);
         }
 
         function closeEditModal() {

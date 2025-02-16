@@ -50,8 +50,18 @@ def add_expense():
             date = pd.Timestamp.today().strftime('%m-%d-%Y')
         try:
             df = pd.read_csv(EXPENSE_FILE, keep_default_na=True)
-            df['ID'] = df.index + 1
-            new_data = pd.DataFrame({"Date": [date],
+
+            # Get the last ID from the file, or set to 0 if file is empty
+            last_id = df["Id"].max() if not df.empty else 0
+            new_id = last_id + 1  # Increment the ID for the new entry
+
+            # Ensure new_id is not a duplicate
+            if new_id in df["Id"].values:
+                app.logger.warning(f"Duplicate ID detected: {new_id}")
+                return jsonify({"success": False, "error": "Duplicate ID found"})
+
+            new_data = pd.DataFrame({"Id": [new_id],
+                                     "Date": [date],
                                      "Purchase": [purchase],
                                      "Amount": [amount],
                                      "Notes": [notes]})
